@@ -1,0 +1,4 @@
+---
+# handlers file for nfs-provisioner-role
+- name: restart nfs
+  service: name=nfs-server state=restarted

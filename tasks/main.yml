@@ -1,0 +1,8 @@
+---
+- name: provision nfs server
+  include_tasks: configure-nfs-server.yml
+  when: provision_nfs_server
+
+- name: provision nfs  provisioner on openshift
+  include_tasks: nfs-provisioner.yml
+  when: provision_nfs_provisoner

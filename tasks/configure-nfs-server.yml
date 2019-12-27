@@ -1,0 +1,57 @@
+- name: install nfs-utils
+  yum:
+    name:
+    - nfs-utils
+    state: present
+
+- name: install firewalld
+  yum:
+    name:
+    - firewalld
+    state: present
+
+- name: Make sure firewalld is running
+  systemd:
+    state: started
+    name: firewalld
+
+- name: enable firewalld and ensure it is not masked
+  systemd:
+    name: firewalld
+    enabled: yes
+    masked: no
+
+- name: Open up firewall ports
+  firewalld:
+    permanent: yes
+    immediate: yes
+    state: enabled
+    port: "{{ item }}"
+  with_items:
+    - 2049/tcp
+    - 2049/udp
+
+- name: Create NFS export directory
+  file:
+    path: "{{ nfs_server_directory_path }}"
+    state: directory
+    mode: 0777
+    owner: nfsnobody
+    group: nfsnobody
+  notify:
+    - restart nfs
+
+- name: Copy NFS export conf file
+  template: src=templates/nfs-exports.j2 dest=/etc/exports
+  notify: restart nfs
+
+- name: Starting nfs services
+  service:
+    name: "{{ item }}"
+    enabled: yes
+    state: started
+  with_items:
+    - rpcbind
+    - nfs-server
+    - nfs-lock
+    - nfs-idmap

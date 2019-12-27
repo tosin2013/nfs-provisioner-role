@@ -1,0 +1,10 @@
+---
+- hosts: targetserver
+  remote_user: exampleuser
+  become: yes
+  vars_files:
+  - defaults/main.yml
+  tasks:
+  - include: tasks/main.yml
+  handlers:
+  - include: handlers/main.yml
