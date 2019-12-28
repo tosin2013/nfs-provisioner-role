@@ -41,7 +41,14 @@ provision_nfs_server  | Install and configure nfs server packages  | true
 nfs_server_directory_path  |  Set Directory path of nfs storage  | /exports
 provision_nfs_provisoner |Configure the nfs-provisioner container on OpenShift | true
 nfs_server_ip | Set the ip address of the nfs server | 192.168.1.2
-registry_pvc_size | Configure the default size of regisitry | 60Gi
+registry_pvc_size | Configure the default size of regisitry | 60Gi  
+openshift_token | OpenShift login token  | 123456789
+openshift_url | OpenShift target url  | https://master.example.com
+project_namespace | OpenShift Project name for the nfs-provisioner | nfs-provisioner
+rbac_location  | default path of yaml file  | "/usr/local/src/nfs-provisioner-rbac.yaml"
+nfs_provisioner_deploy_loc  | default path of yaml file  | "/usr/local/src/nfs-provisioner-deployment.yaml"
+rbac_location  | default path of yaml file  | "/usr/local/src/nfs-provisioner-sc.yaml"
+delete_deployment  | delete the deployment and project for nfs-provisioner  | false
 
 Dependencies
 ------------
@@ -53,10 +60,22 @@ Example Playbook
 ----------------
 
 Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
-
+```
     - hosts: targetserver
+      vars:
+        provision_nfs_server: true
+        nfs_server_directory_path: /export
+        provision_nfs_provisoner: true
+        nfs_server_ip:  changeme
+        registry_pvc_size: 60Gi
+        storage_class_result: true
+        openshift_token: 1234567890
+        openshift_url: https://master.example.com
+        set_as_default: true
+        delete_deployment: false
       roles:
-         - nfs-provisioner-role
+      - nfs-provisioner-role
+```
 
 License
 -------
