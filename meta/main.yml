@@ -28,7 +28,7 @@ galaxy_info:
   # https://galaxy.ansible.com/api/v1/platforms/
   #
   platforms:
-   - name: EPEL
+   - name: EL
      versions:
      - 7.6
      - 7.7
