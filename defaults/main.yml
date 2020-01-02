@@ -13,3 +13,4 @@ rbac_location: "/usr/local/src/nfs-provisioner-rbac.yaml"
 nfs_provisioner_deploy_loc: "/usr/local/src/nfs-provisioner-deployment.yaml"
 sc_location: "/usr/local/src/nfs-provisioner-sc.yaml"
 delete_deployment: false
+openshift_version: ocp4 

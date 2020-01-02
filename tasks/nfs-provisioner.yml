@@ -30,13 +30,25 @@
     group: root
     mode: 0666
 
-- name: login as super user with token
-  shell: "oc login {{ openshift_url }} --token={{ openshift_token }} --insecure-skip-tls-verify=true"
+- name: login as super user with token on OpenShift 4
+  shell: "oc login --token={{ openshift_token }}  --server={{ openshift_url }}"
   when:
    - openshift_token is defined
    - openshift_token is not none
    - openshift_token|trim() != ""
+   - openshift_version == "ocp4"
   ignore_errors: no
+
+
+  - name: login as super user with token on OpenShift 3
+    shell: "oc login {{ openshift_url }} --token={{ openshift_token }} --insecure-skip-tls-verify=true"
+    when:
+     - openshift_token is defined
+     - openshift_token is not none
+     - openshift_token|trim() != ""
+     - openshift_version == "ocp3"
+    ignore_errors: no
+
 
 - name: Create new project for nfs-provisioner
   command: "oc new-project {{ project_namespace }}"
