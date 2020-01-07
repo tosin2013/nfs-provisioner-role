@@ -40,14 +40,14 @@
   ignore_errors: no
 
 
-  - name: login as super user with token on OpenShift 3
-    shell: "oc login {{ openshift_url }} --token={{ openshift_token }} --insecure-skip-tls-verify=true"
-    when:
-     - openshift_token is defined
-     - openshift_token is not none
-     - openshift_token|trim() != ""
-     - openshift_version == "ocp3"
-    ignore_errors: no
+- name: login as super user with token on OpenShift 3
+  shell: "oc login {{ openshift_url }} --token={{ openshift_token }} --insecure-skip-tls-verify=true"
+  when:
+   - openshift_token is defined
+   - openshift_token is not none
+   - openshift_token|trim() != ""
+   - openshift_version == "ocp3"
+  ignore_errors: no
 
 
 - name: Create new project for nfs-provisioner
