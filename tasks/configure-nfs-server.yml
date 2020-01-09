@@ -42,7 +42,7 @@
     - restart nfs
 
 - name: Copy NFS export conf file
-  template: src=templates/nfs-exports.j2 dest=/etc/exports
+  template: src=templates/nfs-exports.j2 dest=/etc/exports.d/nfs-auto.exports
   notify: restart nfs
 
 - name: Starting nfs services
