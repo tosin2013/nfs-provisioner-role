@@ -50,6 +50,7 @@ nfs_provisioner_deploy_loc  | default path of yaml file  | "/usr/local/src/nfs-p
 rbac_location  | default path of yaml file  | "/usr/local/src/nfs-provisioner-sc.yaml"
 delete_deployment  | delete the deployment and project for nfs-provisioner  | false
 openshift_version  | OpenShift version that will will be deploying nfs-provisioner to | ocp4 (ocp3 would be for OpenShift 3.11)
+insecure_skip_tls_verify  |  Skip insecure tls verify  |  true
 
 Dependencies
 ------------
@@ -76,6 +77,7 @@ Including an example of how to use your role (for instance, with variables passe
         openshift_version: ocp4
         set_as_default: true
         delete_deployment: false
+        insecure_skip_tls_verify: true
       roles:
       - nfs-provisioner-role
 ```
