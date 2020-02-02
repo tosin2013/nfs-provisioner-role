@@ -75,6 +75,7 @@ Including an example of how to use your role (for instance, with variables passe
         openshift_token: 1234567890
         openshift_url: https://master.example.com:6443 #https://master.example.com for openshift 3
         openshift_version: ocp4
+        project_namespace: nfs-provisioner
         set_as_default: true
         delete_deployment: false
         insecure_skip_tls_verify: true
