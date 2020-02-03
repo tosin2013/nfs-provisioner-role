@@ -1,7 +1,7 @@
-- name: Copying over nfs-provisioner rbac
-  copy:
-    src: templates/nfs-provisioner-rbac.yaml
-    dest: "{{ rbac_location }}"
+- name: Copying over  nfs-provisioner rbac
+  template:
+    src: templates/nfs-provisioner-rbac.yaml.j2
+    dest:  "{{ rbac_location }}"
     owner: root
     group: root
     mode: 0666
@@ -15,8 +15,8 @@
     mode: 0666
 
 - name: Copying over nfs-provisioner storageclass
-  copy:
-    src: templates/nfs-provisioner-sc.yaml
+  template:
+    src: templates/nfs-provisioner-sc.yaml.j2
     dest: /usr/local/src/nfs-provisioner-sc.yaml
     owner: root
     group: root
@@ -65,7 +65,7 @@
   when: not delete_deployment
 
 - name: Configure service account privlages for nfs-client-provisioner
-  command: "oc adm policy add-scc-to-user hostmount-anyuid system:serviceaccount:{{ project_namespace }}:nfs-client-provisioner"
+  command: "oc adm policy add-scc-to-user hostmount-anyuid system:serviceaccount:{{ project_namespace }}:{{ service_account_name }}"
   register: service_account_result
   when: not delete_deployment
 
@@ -80,7 +80,7 @@
   when: not delete_deployment
 
 - name: Set Storage Class as default
-  command: "oc annotate storageclass nfs-storage-provisioner storageclass.kubernetes.io/is-default-class='true'"
+  command: "oc annotate storageclass {{ storage_class_name }} storageclass.kubernetes.io/is-default-class='{{ set_default_storage_class }}'"
   register: set_default_storage_class_result
   when:
   - set_as_default
@@ -104,6 +104,6 @@
 - name: delete nfs-provsioner deployment
   shell: |
     #/bin/bash
-    oc delete all --selector app=nfs-client-provisioner
+    oc delete all --selector app={{ service_account_name }}
     oc delete project {{ project_namespace }}
   when: delete_deployment

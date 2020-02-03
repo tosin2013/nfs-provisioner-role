@@ -1,12 +1,12 @@
 kind: ServiceAccount
 apiVersion: v1
 metadata:
-  name: nfs-client-provisioner
+  name: {{ service_account_name }}
 ---
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: nfs-client-provisioner-runner
+  name: {{ service_account_name }}-runner
 rules:
   - apiGroups: [""]
     resources: ["persistentvolumes"]
@@ -24,20 +24,20 @@ rules:
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: run-nfs-client-provisioner
+  name: run-{{ service_account_name }}
 subjects:
   - kind: ServiceAccount
-    name: nfs-client-provisioner
+    name: {{ service_account_name }}
     namespace: {{ project_namespace }}
 roleRef:
   kind: ClusterRole
-  name: nfs-client-provisioner-runner
+  name: {{ service_account_name }}-runner
   apiGroup: rbac.authorization.k8s.io
 ---
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: leader-locking-nfs-client-provisioner
+  name: leader-locking-{{ service_account_name }}
 rules:
   - apiGroups: [""]
     resources: ["endpoints"]
@@ -46,13 +46,13 @@ rules:
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: leader-locking-nfs-client-provisioner
+  name: leader-locking-{{ service_account_name }}
 subjects:
   - kind: ServiceAccount
-    name: nfs-client-provisioner
+    name: {{ service_account_name }}
     # replace with namespace where provisioner is deployed
     namespace: {{ project_namespace }}
 roleRef:
   kind: Role
-  name: leader-locking-nfs-client-provisioner
+  name: leader-locking-{{ service_account_name }}
   apiGroup: rbac.authorization.k8s.io

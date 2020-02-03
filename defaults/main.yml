@@ -9,6 +9,9 @@ registry_pvc_size: 60Gi
 openshift_token: 1234567890
 openshift_url: https://master.example.com
 project_namespace: nfs-provisioner
+service_account_name: nfs-client-provisioner
+storage_class_name: nfs-storage-provisioner
+set_default_storage_class: true
 rbac_location: "/usr/local/src/nfs-provisioner-rbac.yaml"
 nfs_provisioner_deploy_loc: "/usr/local/src/nfs-provisioner-deployment.yaml"
 sc_location: "/usr/local/src/nfs-provisioner-sc.yaml"

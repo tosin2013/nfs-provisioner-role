@@ -67,7 +67,7 @@ Including an example of how to use your role (for instance, with variables passe
       become: yes
       vars:
         provision_nfs_server: true
-        nfs_server_directory_path: /exports
+        nfs_server_directory_path: /export
         provision_nfs_provisoner: true
         nfs_server_ip:  changeme
         registry_pvc_size: 60Gi
