@@ -40,14 +40,17 @@ Type  | Description  | Default Value
 provision_nfs_server  | Install and configure nfs server packages  | true
 nfs_server_directory_path  |  Set Directory path of nfs storage  | /exports
 provision_nfs_provisoner |Configure the nfs-provisioner container on OpenShift | true
+configure_registry  |  Configure Registry with nfs-provisioner storage  |  false
 nfs_server_ip | Set the ip address of the nfs server | 192.168.1.2
-registry_pvc_size | Configure the default size of regisitry | 60Gi  
+registry_pvc_size | Configure the default size of regisitry | 100Gi  
 openshift_token | OpenShift login token  | 123456789
 openshift_url | OpenShift target url  | https://master.example.com
 project_namespace | OpenShift Project name for the nfs-provisioner | nfs-provisioner
 rbac_location  | default path of yaml file  | "/usr/local/src/nfs-provisioner-rbac.yaml"
 nfs_provisioner_deploy_loc  | default path of yaml file  | "/usr/local/src/nfs-provisioner-deployment.yaml"
-rbac_location  | default path of yaml file  | "/usr/local/src/nfs-provisioner-sc.yaml"
+sc_location  | default path of yaml file  | "/usr/local/src/nfs-provisioner-sc.yaml"
+storage_class_name  |  default storage class name  |  nfs-storage-provisioner
+registry_pvc_location  |  default path of yaml file  |   "/usr/local/src/registry-pvc.yaml"
 delete_deployment  | delete the deployment and project for nfs-provisioner  | false
 openshift_version  | OpenShift version that will will be deploying nfs-provisioner to | ocp4 (ocp3 would be for OpenShift 3.11)
 insecure_skip_tls_verify  |  Skip insecure tls verify  |  true
@@ -67,14 +70,16 @@ Including an example of how to use your role (for instance, with variables passe
       become: yes
       vars:
         provision_nfs_server: true
-        nfs_server_directory_path: /exports
+        nfs_server_directory_path: /export
         provision_nfs_provisoner: true
+        configure_registry: false
         nfs_server_ip:  changeme
-        registry_pvc_size: 60Gi
+        registry_pvc_size: 100Gi
         storage_class_result: true
         openshift_token: 1234567890
         openshift_url: https://master.example.com:6443 #https://master.example.com for openshift 3
         openshift_version: ocp4
+        project_namespace: nfs-provisioner
         set_as_default: true
         delete_deployment: false
         insecure_skip_tls_verify: true
