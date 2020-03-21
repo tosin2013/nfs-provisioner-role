@@ -22,14 +22,6 @@
     group: root
     mode: 0666
 
-- name: Copying over a sample PVC file for NFS
-  template:
-    src: templates/registry-pvc.yaml.j2
-    dest: /usr/local/src/registry-pvc.yaml
-    owner: root
-    group: root
-    mode: 0666
-
 - name: login as super user with token on OpenShift 4
   shell: "oc login --token={{ openshift_token }}  --server={{ openshift_url }} --insecure-skip-tls-verify={{ insecure_skip_tls_verify }}"
   when:

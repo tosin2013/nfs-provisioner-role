@@ -3,9 +3,10 @@
 provision_nfs_server: true
 nfs_server_directory_path: /export
 provision_nfs_provisoner: true
+configure_registry: false
 set_as_default: true
 nfs_server_ip:  192.168.1.2
-registry_pvc_size: 60Gi
+registry_pvc_size: 100Gi
 openshift_token: 1234567890
 openshift_url: https://master.example.com
 project_namespace: nfs-provisioner
@@ -15,6 +16,7 @@ set_default_storage_class: true
 rbac_location: "/usr/local/src/nfs-provisioner-rbac.yaml"
 nfs_provisioner_deploy_loc: "/usr/local/src/nfs-provisioner-deployment.yaml"
 sc_location: "/usr/local/src/nfs-provisioner-sc.yaml"
+registry_pvc_location: "/usr/local/src/registry-pvc.yaml"
 delete_deployment: false
 openshift_version: ocp4
 insecure_skip_tls_verify: true
