@@ -30,7 +30,7 @@
   register: switch_project_result
 
 - name: Change ManagementState Image Registry Operator configuration from Removed to Managed.
-  command: "oc patch configs.imageregistry.operator.openshift.io cluster --type merge --patch '{"spec":{"managementState": "Managed"}}'"
+  command: 'oc patch configs.imageregistry.operator.openshift.io cluster --type merge --patch '{"spec":{"managementState": "Managed"}}''
   when: not delete_deployment
 
 - name: Create persistent volume for registry
