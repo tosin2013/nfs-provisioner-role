@@ -30,8 +30,10 @@
   register: switch_project_result
 
 - name: Change ManagementState Image Registry Operator configuration from Removed to Managed.
-  command: 'oc patch configs.imageregistry.operator.openshift.io cluster --type merge --patch '{"spec":{"managementState": "Managed"}}''
+  command: "oc patch configs.imageregistry.operator.openshift.io cluster --type merge --patch 'patch_command'"
   when: not delete_deployment
+    vars:
+      patch_command: "{"spec":{"managementState": "Managed"}}"
 
 - name: Create persistent volume for registry
   command: "oc create -f {{ registry_pvc_location }}"
@@ -39,8 +41,10 @@
   when: not delete_deployment
 
 - name: Configuring registry storage
-  command: "oc patch configs.imageregistry.operator.openshift.io cluster --type merge --patch '{"spec":{"storage": {"pvc": {"claim": "image-registry-pvc"}}}}'"
+  command: "oc patch configs.imageregistry.operator.openshift.io cluster --type merge --patch 'patch_command'"
   when: not delete_deployment
+  vars:
+    patch_command: "{"spec":{"storage": {"pvc": {"claim": "image-registry-pvc"}}}}'"
 
 - debug:
     msg: Run the Following Command oc get co to check clusteroperator status of registry.
