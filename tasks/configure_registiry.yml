@@ -33,7 +33,7 @@
   command: "oc patch configs.imageregistry.operator.openshift.io cluster --type merge --patch 'patch_command'"
   when: not delete_deployment
   vars:
-    patch_command: "{"spec":{"managementState": "Managed"}}"
+    patch_command: "{\"spec\":{\"managementState\": \"Managed\"}}"
 
 - name: Create persistent volume for registry
   command: "oc create -f {{ registry_pvc_location }}"
