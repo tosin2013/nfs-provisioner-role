@@ -30,8 +30,9 @@
   register: switch_project_result
 
 - name: Change ManagementState Image Registry Operator configuration from Removed to Managed.
-  command: "oc patch configs.imageregistry.operator.openshift.io cluster --type merge --patch '{"spec":{"managementState": "Managed"}}'"
+  command: "oc patch configs.imageregistry.operator.openshift.io cluster --type merge --patch '{\"spec\":{\"managementState\": \"Managed\"}}'"
   when: not delete_deployment
+
 
 - name: Create persistent volume for registry
   command: "oc create -f {{ registry_pvc_location }}"
@@ -39,7 +40,7 @@
   when: not delete_deployment
 
 - name: Configuring registry storage
-  command: "oc patch configs.imageregistry.operator.openshift.io cluster --type merge --patch '{"spec":{"storage": {"pvc": {"claim": "image-registry-pvc"}}}}'"
+  command: "oc patch configs.imageregistry.operator.openshift.io cluster --type merge --patch '{\"spec\":{\"storage\": {\"pvc\": {\"claim\": \"image-registry-pvc\"}}}}'"
   when: not delete_deployment
 
 - debug:
@@ -52,6 +53,6 @@
   when: delete_deployment
 
 - name: Change ManagementState Image Registry Operator configuration from Managed to Removed.
-  command: "oc patch configs.imageregistry.operator.openshift.io cluster --type merge --patch '{"spec":{"managementState": "Removed"}}'"
+  command: "oc patch configs.imageregistry.operator.openshift.io cluster --type merge --patch '{\"spec\":{\"managementState\": \"Removed\"}}'"
   register: storage_class_result
   when: delete_deployment
