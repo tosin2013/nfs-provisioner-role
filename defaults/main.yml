@@ -7,8 +7,7 @@ configure_registry: false
 set_as_default: true
 nfs_server_ip:  192.168.1.2
 registry_pvc_size: 100Gi
-openshift_token: 1234567890
-openshift_url: https://master.example.com
+openshift_install_dir: "/home/qubi/qubinode-installer/ocp4"
 project_namespace: nfs-provisioner
 service_account_name: nfs-client-provisioner
 storage_class_name: nfs-storage-provisioner

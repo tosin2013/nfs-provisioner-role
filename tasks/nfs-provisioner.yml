@@ -22,53 +22,45 @@
     group: root
     mode: 0666
 
-- name: login as super user with token on OpenShift 4
-  shell: "oc login --token={{ openshift_token }}  --server={{ openshift_url }} --insecure-skip-tls-verify={{ insecure_skip_tls_verify }}"
-  when:
-   - openshift_token is defined
-   - openshift_token is not none
-   - openshift_token|trim() != ""
-   - openshift_version == "ocp4"
-  ignore_errors: no
-
-
-- name: login as super user with token on OpenShift 3
-  shell: "oc login {{ openshift_url }} --token={{ openshift_token }} --insecure-skip-tls-verify={{ insecure_skip_tls_verify }}"
-  when:
-   - openshift_token is defined
-   - openshift_token is not none
-   - openshift_token|trim() != ""
-   - openshift_version == "ocp3"
-  ignore_errors: no
-
-
 - name: Create new project for nfs-provisioner
   command: "oc new-project {{ project_namespace }}"
   register: create_project_result
+  environment:
+    KUBECONFIG: "{{ openshift_install_dir }}/auth/kubeconfig"
   when: not delete_deployment
 
 - name: Switch to project for nfs-provisioner
   command:  "oc project {{ project_namespace }}"
+  environment:
+    KUBECONFIG: "{{ openshift_install_dir }}/auth/kubeconfig"
   register: switch_project_result
 
 - name: Create rbac run for NFS Provisioner
   command: "oc create -f {{ rbac_location }}"
   register: rbac_result
+  environment:
+    KUBECONFIG: "{{ openshift_install_dir }}/auth/kubeconfig"
   when: not delete_deployment
 
 - name: Configure service account privlages for nfs-client-provisioner
   command: "oc adm policy add-scc-to-user hostmount-anyuid system:serviceaccount:{{ project_namespace }}:{{ service_account_name }}"
   register: service_account_result
+  environment:
+    KUBECONFIG: "{{ openshift_install_dir }}/auth/kubeconfig"
   when: not delete_deployment
 
 - name: Deploy nfs-provisioner
   command: "oc create -f {{ nfs_provisioner_deploy_loc }} -n {{ project_namespace }}"
   register: deployment_result
+  environment:
+    KUBECONFIG: "{{ openshift_install_dir }}/auth/kubeconfig"
   when: not delete_deployment
 
 - name: Deploy nfs-storage storage class
   command: "oc create -f {{ sc_location }}"
   register: storage_class_result
+  environment:
+    KUBECONFIG: "{{ openshift_install_dir }}/auth/kubeconfig"
   when: not delete_deployment
 
 - name: Set Storage Class as default

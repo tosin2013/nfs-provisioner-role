@@ -6,41 +6,30 @@
     group: root
     mode: 0666
 
-- name: login as super user with token on OpenShift 4
-  shell: "oc login --token={{ openshift_token }}  --server={{ openshift_url }} --insecure-skip-tls-verify={{ insecure_skip_tls_verify }}"
-  when:
-   - openshift_token is defined
-   - openshift_token is not none
-   - openshift_token|trim() != ""
-   - openshift_version == "ocp4"
-  ignore_errors: no
-
-
-- name: login as super user with token on OpenShift 3
-  shell: "oc login {{ openshift_url }} --token={{ openshift_token }} --insecure-skip-tls-verify={{ insecure_skip_tls_verify }}"
-  when:
-   - openshift_token is defined
-   - openshift_token is not none
-   - openshift_token|trim() != ""
-   - openshift_version == "ocp3"
-  ignore_errors: no
-
 - name: Switch to project for openshift-image-registry
   command:  "oc project openshift-image-registry"
+  environment:
+    KUBECONFIG: "{{ openshift_install_dir }}/auth/kubeconfig"
   register: switch_project_result
 
 - name: Change ManagementState Image Registry Operator configuration from Removed to Managed.
   command: "oc patch configs.imageregistry.operator.openshift.io cluster --type merge --patch '{\"spec\":{\"managementState\": \"Managed\"}}'"
+  environment:
+    KUBECONFIG: "{{ openshift_install_dir }}/auth/kubeconfig"
   when: not delete_deployment
 
 
 - name: Create persistent volume for registry
   command: "oc create -f {{ registry_pvc_location }}"
   register: pvc_loc_result
+  environment:
+    KUBECONFIG: "{{ openshift_install_dir }}/auth/kubeconfig"
   when: not delete_deployment
 
 - name: Configuring registry storage
   command: "oc patch configs.imageregistry.operator.openshift.io cluster --type merge --patch '{\"spec\":{\"storage\": {\"pvc\": {\"claim\": \"image-registry-pvc\"}}}}'"
+  environment:
+    KUBECONFIG: "{{ openshift_install_dir }}/auth/kubeconfig"
   when: not delete_deployment
 
 - debug:
@@ -50,9 +39,13 @@
 - name: Delete persistent volume for registry
   command: "oc delete -f {{ registry_pvc_location }}"
   register: pvc_loc_result
+  environment:
+    KUBECONFIG: "{{ openshift_install_dir }}/auth/kubeconfig"
   when: delete_deployment
 
 - name: Change ManagementState Image Registry Operator configuration from Managed to Removed.
   command: "oc patch configs.imageregistry.operator.openshift.io cluster --type merge --patch '{\"spec\":{\"managementState\": \"Removed\"}}'"
   register: storage_class_result
+  environment:
+    KUBECONFIG: "{{ openshift_install_dir }}/auth/kubeconfig"
   when: delete_deployment
