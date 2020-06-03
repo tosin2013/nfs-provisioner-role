@@ -37,6 +37,7 @@ Role Variables
 --------------
 Type  | Description  | Default Value
 --|---|--
+use_token | Using login token to connect to OpenShift Cluster. | true
 provision_nfs_server  | Install and configure nfs server packages  | true
 nfs_server_directory_path  |  Set Directory path of nfs storage  | /exports
 provision_nfs_provisoner |Configure the nfs-provisioner container on OpenShift | true
@@ -62,20 +63,44 @@ Dependencies
 
 Example Playbook
 ----------------
-
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
+Example using token to deploy to OpenShift 
 ```
-    - hosts: targetserver
+    - hosts: localhost
       become: yes
       vars:
+        use_token: true
         provision_nfs_server: true
         nfs_server_directory_path: /export
         provision_nfs_provisoner: true
-        configure_registry: false
+        configure_registry: true
         nfs_server_ip:  changeme
         registry_pvc_size: 100Gi
         storage_class_result: true
-        openshift_install_dir: "/home/qubi/qubinode-installer/ocp4"
+        openshift_token: 1234567890
+        openshift_url: https://master.example.com:6443 #https://master.example.com for openshift 3
+        openshift_version: ocp4
+        project_namespace: nfs-provisioner
+        set_as_default: true
+        delete_deployment: false
+        insecure_skip_tls_verify: true
+      roles:
+      - nfs-provisioner-role
+```
+
+Example using kubeconfig to deploy to OpenShift 
+```
+    - hosts: localhost
+      become: yes
+      vars:
+        use_token: false
+        provision_nfs_server: true
+        nfs_server_directory_path: /export
+        provision_nfs_provisoner: true
+        configure_registry: true
+        nfs_server_ip:  changeme
+        registry_pvc_size: 100Gi
+        storage_class_result: true
+        openshift_install_dir: "<installation_directory>/auth/kubeconfig"
         openshift_version: ocp4
         project_namespace: nfs-provisioner
         set_as_default: true

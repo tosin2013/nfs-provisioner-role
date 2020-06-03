@@ -5,8 +5,17 @@
 
 - name: provision nfs  provisioner on openshift
   include_tasks: nfs-provisioner.yml
-  when: provision_nfs_provisoner
+  when: provision_nfs_provisoner and use_token|bool
 
 - name: provision registry storage with nfs-provisioner
-  include_tasks: configure_registiry.yml
-  when: configure_registry
+  include_tasks: configure-registiry.yml
+  when: configure_registry and use_token|bool
+
+- name: provision nfs  provisioner on openshift
+  include_tasks: nfs-provisioner-kubeconfig.yml
+  when: provision_nfs_provisoner and not use_token|bool
+
+- name: provision registry storage with nfs-provisioner
+  include_tasks: configure-registiry-kubeconfig.yml
+  when: configure_registry and not use_token|bool
+

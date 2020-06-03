@@ -1,5 +1,8 @@
 ---
 # defaults file for nfs-provisioner-role
+use_token: true
+openshift_token: 1234567890
+openshift_url: https://master.example.com
 provision_nfs_server: true
 nfs_server_directory_path: /export
 provision_nfs_provisoner: true
