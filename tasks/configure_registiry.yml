@@ -16,7 +16,7 @@
   command: "/usr/local/bin/oc patch configs.imageregistry.operator.openshift.io cluster --type merge --patch '{\"spec\":{\"managementState\": \"Managed\"}}'"
   environment:
     KUBECONFIG: "{{ openshift_install_dir }}/auth/kubeconfig"
-  when: not delete_deployment
+  when: not delete_deployment|bool
 
 
 - name: Create persistent volume for registry
@@ -24,28 +24,58 @@
   register: pvc_loc_result
   environment:
     KUBECONFIG: "{{ openshift_install_dir }}/auth/kubeconfig"
-  when: not delete_deployment
+  when: not delete_deployment|bool
 
 - name: Configuring registry storage
   command: "/usr/local/bin/oc patch configs.imageregistry.operator.openshift.io cluster --type merge --patch '{\"spec\":{\"storage\": {\"pvc\": {\"claim\": \"image-registry-pvc\"}}}}'"
   environment:
     KUBECONFIG: "{{ openshift_install_dir }}/auth/kubeconfig"
-  when: not delete_deployment
+  when: not delete_deployment|bool
 
 - debug:
     msg: Run the Following Command /usr/local/bin/oc get co to check clusteroperator status of registry.
-  when: not delete_deployment
-
-- name: Delete persistent volume for registry
-  command: "/usr/local/bin/oc delete -f {{ registry_pvc_location }}"
-  register: pvc_loc_result
-  environment:
-    KUBECONFIG: "{{ openshift_install_dir }}/auth/kubeconfig"
-  when: delete_deployment
+  when: not delete_deployment|bool
 
 - name: Change ManagementState Image Registry Operator configuration from Managed to Removed.
   command: "/usr/local/bin/oc patch configs.imageregistry.operator.openshift.io cluster --type merge --patch '{\"spec\":{\"managementState\": \"Removed\"}}'"
   register: storage_class_result
   environment:
    KUBECONFIG: "{{ openshift_install_dir }}/auth/kubeconfig"
-  when: delete_deployment
+  ignore_errors: yes
+  when: delete_deployment|bool
+
+- name: "Check that the {{ registry_pvc_location }} exists"
+  stat:
+    path: "{{ registry_pvc_location }}"
+  register: registry_pvc_result
+
+- name: Delete persistent volume for registry
+  command: "/usr/local/bin/oc delete -f {{ registry_pvc_location }}"
+  environment:
+    KUBECONFIG: "{{ openshift_install_dir }}/auth/kubeconfig"
+  ignore_errors: yes
+  when: delete_deployment|bool and  registry_pvc_result.stat.exists|bool
+
+- name: Remove stoage pvc entry from configs.imageregistry.operator.openshift.io
+  command: "/usr/local/bin/oc patch configs.imageregistry.operator.openshift.io cluster --type json  -p '[{ \"op\": \"remove\", \"path\": \"/spec/storage/pvc\" }]'"
+  environment:
+    KUBECONFIG: "{{ openshift_install_dir }}/auth/kubeconfig"
+  ignore_errors: yes
+  when: delete_deployment|bool
+
+- name: Get PV name
+  shell: |
+    /usr/local/bin/oc get pv -n openshift-image-registry | grep nfs-storage-provisioner | awk '{print $1}'
+  environment:
+    KUBECONFIG: "{{ openshift_install_dir }}/auth/kubeconfig"
+  ignore_errors: yes
+  register: pv_removal_name
+  when: delete_deployment|bool
+
+
+- name: Remove pv from cluster
+  command: "/usr/local/bin/oc delete pv {{ pv_removal_name.stdout }} -n openshift-image-registry"
+  environment:
+    KUBECONFIG: "{{ openshift_install_dir }}/auth/kubeconfig"
+  ignore_errors: yes
+  when: delete_deployment|bool and  pv_removal_name.stdout != ""

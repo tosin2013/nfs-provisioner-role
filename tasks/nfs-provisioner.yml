@@ -27,12 +27,13 @@
   register: create_project_result
   environment:
     KUBECONFIG: "{{ openshift_install_dir }}/auth/kubeconfig"
-  when: not delete_deployment
+  when: not delete_deployment|bool
 
 - name: Switch to project for nfs-provisioner
   command:  "/usr/local/bin/oc project {{ project_namespace }}"
   environment:
     KUBECONFIG: "{{ openshift_install_dir }}/auth/kubeconfig"
+  ignore_errors: yes
   register: switch_project_result
 
 - name: Create rbac run for NFS Provisioner
@@ -40,28 +41,28 @@
   register: rbac_result
   environment:
     KUBECONFIG: "{{ openshift_install_dir }}/auth/kubeconfig"
-  when: not delete_deployment
+  when: not delete_deployment|bool
 
 - name: Configure service account privlages for nfs-client-provisioner
   command: "/usr/local/bin/oc adm policy add-scc-to-user hostmount-anyuid system:serviceaccount:{{ project_namespace }}:{{ service_account_name }}"
   register: service_account_result
   environment:
     KUBECONFIG: "{{ openshift_install_dir }}/auth/kubeconfig"
-  when: not delete_deployment
+  when: not delete_deployment|bool
 
 - name: Deploy nfs-provisioner
   command: "/usr/local/bin/oc create -f {{ nfs_provisioner_deploy_loc }} -n {{ project_namespace }}"
   register: deployment_result
   environment:
     KUBECONFIG: "{{ openshift_install_dir }}/auth/kubeconfig"
-  when: not delete_deployment
+  when: not delete_deployment|bool
 
 - name: Deploy nfs-storage storage class
   command: "/usr/local/bin/oc create -f {{ sc_location }}"
   register: storage_class_result
   environment:
     KUBECONFIG: "{{ openshift_install_dir }}/auth/kubeconfig"
-  when: not delete_deployment
+  when: not delete_deployment|bool
 
 - name: Set Storage Class as default
   command: "/usr/local/bin/oc annotate storageclass {{ storage_class_name }} storageclass.kubernetes.io/is-default-class='{{ set_default_storage_class }}'"
@@ -70,28 +71,30 @@
     KUBECONFIG: "{{ openshift_install_dir }}/auth/kubeconfig"
   when:
   - set_as_default
-  - not delete_deployment
+  - not delete_deployment|bool
 
 - name: Switch back to default project
   command: "/usr/local/bin/oc project default"
   register: default_result
   environment:
     KUBECONFIG: "{{ openshift_install_dir }}/auth/kubeconfig"
-  when: not delete_deployment
+  when: not delete_deployment|bool
 
 - name: Delete rbac  for NFS Provisioner
   command: "/usr/local/bin/oc delete -f {{ rbac_location }}"
   environment:
     KUBECONFIG: "{{ openshift_install_dir }}/auth/kubeconfig"
   register: rbac_result
-  when: delete_deployment
+  ignore_errors: yes
+  when: delete_deployment|bool
 
 - name: Delete nfs-storage storage class
   command: "/usr/local/bin/oc delete -f {{ sc_location }}"
   register: storage_class_result
   environment:
     KUBECONFIG: "{{ openshift_install_dir }}/auth/kubeconfig"
-  when: delete_deployment
+  ignore_errors: yes
+  when: delete_deployment|bool
 
 - name: delete nfs-provsioner deployment
   shell: |
@@ -100,4 +103,5 @@
      /usr/local/bin/oc delete project {{ project_namespace }}
   environment:
     KUBECONFIG: "{{ openshift_install_dir }}/auth/kubeconfig"
-  when: delete_deployment
+  ignore_errors: yes
+  when: delete_deployment|bool
