@@ -5,6 +5,7 @@
     owner: root
     group: root
     mode: 0666
+  
 
 - name: Copying over nfs-provisioner deployment
   template:

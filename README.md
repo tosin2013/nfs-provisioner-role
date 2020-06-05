@@ -44,7 +44,7 @@ provision_nfs_provisoner |Configure the nfs-provisioner container on OpenShift |
 configure_registry  |  Configure Registry with nfs-provisioner storage  |  false
 nfs_server_ip | Set the ip address of the nfs server | 192.168.1.2
 registry_pvc_size | Configure the default size of regisitry | 100Gi  
-openshift_install_dir location of auth/kubeconfig | "/home/qubi/qubinode-installer/ocp4"
+openshift_install_dir location of auth/kubeconfig | "/home/user/<installation_directory>/"
 project_namespace | OpenShift Project name for the nfs-provisioner | nfs-provisioner
 rbac_location  | default path of yaml file  | "/usr/local/src/nfs-provisioner-rbac.yaml"
 nfs_provisioner_deploy_loc  | default path of yaml file  | "/usr/local/src/nfs-provisioner-deployment.yaml"
@@ -63,51 +63,51 @@ Dependencies
 
 Example Playbook
 ----------------
-Example using token to deploy to OpenShift 
+Example using token to deploy to nfs-provisioner OpenShift
 ```
-    - hosts: localhost
-      become: yes
-      vars:
-        use_token: true
-        provision_nfs_server: true
-        nfs_server_directory_path: /export
-        provision_nfs_provisoner: true
-        configure_registry: true
-        nfs_server_ip:  changeme
-        registry_pvc_size: 100Gi
-        storage_class_result: true
-        openshift_token: 1234567890
-        openshift_url: https://master.example.com:6443 #https://master.example.com for openshift 3
-        openshift_version: ocp4
-        project_namespace: nfs-provisioner
-        set_as_default: true
-        delete_deployment: false
-        insecure_skip_tls_verify: true
-      roles:
-      - nfs-provisioner-role
+- hosts: localhost
+  become: yes
+  vars:
+    use_token: true
+    provision_nfs_server: true
+    nfs_server_directory_path: /export
+    provision_nfs_provisoner: true
+    configure_registry: true
+    nfs_server_ip:  changeme
+    registry_pvc_size: 100Gi
+    storage_class_result: true
+    openshift_token: 1234567890
+    openshift_url: https://master.example.com:6443 #https://master.example.com for openshift 3
+    openshift_version: ocp4
+    project_namespace: nfs-provisioner
+    set_as_default: true
+    delete_deployment: false
+    insecure_skip_tls_verify: true
+  roles:
+  - nfs-provisioner-role
 ```
 
-Example using kubeconfig to deploy to OpenShift 
+Example using kubeconfig to deploy to nfs-provisioner OpenShift
 ```
-    - hosts: localhost
-      become: yes
-      vars:
-        use_token: false
-        provision_nfs_server: true
-        nfs_server_directory_path: /export
-        provision_nfs_provisoner: true
-        configure_registry: true
-        nfs_server_ip:  changeme
-        registry_pvc_size: 100Gi
-        storage_class_result: true
-        openshift_install_dir: "<installation_directory>/auth/kubeconfig"
-        openshift_version: ocp4
-        project_namespace: nfs-provisioner
-        set_as_default: true
-        delete_deployment: false
-        insecure_skip_tls_verify: true
-      roles:
-      - nfs-provisioner-role
+- hosts: localhost
+  become: yes
+  vars:
+    use_token: false
+    provision_nfs_server: true
+    nfs_server_directory_path: /export
+    provision_nfs_provisoner: true
+    configure_registry: true
+    nfs_server_ip:  changeme
+    registry_pvc_size: 100Gi
+    storage_class_result: true
+    openshift_install_dir: "/home/user/<installation_directory>" # install directory of kubeconfig
+    openshift_version: ocp4
+    project_namespace: nfs-provisioner
+    set_as_default: true
+    delete_deployment: false
+    insecure_skip_tls_verify: true
+  roles:
+  - nfs-provisioner-role
 ```
 
 License
