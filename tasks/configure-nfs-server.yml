@@ -31,7 +31,7 @@
     - 2049/tcp
     - 2049/udp
 
-- name: Create NFS export directory
+- name: Create NFS export directory on RHEL 7 
   file:
     path: "{{ nfs_server_directory_path }}"
     state: directory
@@ -40,12 +40,31 @@
     group: nfsnobody
   notify:
     - restart nfs
+  when: (ansible_facts['os_family'] == "RedHat" and ansible_facts['distribution_major_version'] == '7')
+
+- name: SELinux boolean enabled for nfs.
+  seboolean:
+    name: nfs_export_all_rw
+    state: yes
+    persistent: yes
+  when: (ansible_facts['os_family'] == "RedHat" and ansible_facts['distribution_major_version'] == '8')
+
+- name: Create NFS export directory on RHEL 8
+  file:
+    path: "{{ nfs_server_directory_path }}"
+    state: directory
+    mode: 0777
+    owner: nobody
+    group: nobody
+  notify:
+    - restart nfs
+  when: (ansible_facts['os_family'] == "RedHat" and ansible_facts['distribution_major_version'] == '8')
 
 - name: Copy NFS export conf file
   template: src=templates/nfs-exports.j2 dest=/etc/exports.d/nfs-auto.exports
   notify: restart nfs
 
-- name: Starting nfs services
+- name: Starting nfs services RHEL 7
   service:
     name: "{{ item }}"
     enabled: yes
@@ -55,3 +74,14 @@
     - nfs-server
     - nfs-lock
     - nfs-idmap
+  when: (ansible_facts['os_family'] == "RedHat" and ansible_facts['distribution_major_version'] == '7')
+
+- name: Starting nfs services RHEL 8
+  service:
+    name: "{{ item }}"
+    enabled: yes
+    state: started
+  with_items:
+    - rpcbind
+    - nfs-server
+  when: (ansible_facts['os_family'] == "RedHat" and ansible_facts['distribution_major_version'] == '8')
