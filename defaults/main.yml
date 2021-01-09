@@ -1,21 +1,110 @@
 ---
 # defaults file for nfs-provisioner-role
-provision_nfs_server: true
-nfs_server_directory_path: /export
-provision_nfs_provisoner: true
-configure_registry: false
-set_as_default: true
-nfs_server_ip:  192.168.1.2
-registry_pvc_size: 100Gi
-openshift_install_dir: "/home/qubi/qubinode-installer/ocp4"
-project_namespace: nfs-provisioner
-service_account_name: nfs-client-provisioner
-storage_class_name: nfs-storage-provisioner
-set_default_storage_class: true
-rbac_location: "/usr/local/src/nfs-provisioner-rbac.yaml"
-nfs_provisioner_deploy_loc: "/usr/local/src/nfs-provisioner-deployment.yaml"
-sc_location: "/usr/local/src/nfs-provisioner-sc.yaml"
-registry_pvc_location: "/usr/local/src/registry-pvc.yaml"
+
+################
+## General Vars
+## Set to no to skip provision the NFS server
+provision_nfs_server: yes
+
+## User to own all files
+admin_user: root
+
+## Set to yes to remove nfs server
+remove_nfs_server: no
+
+## Location to kubeconfig
+kubeconfig_dir: "/home/qubi/qubinode-installer/ocp4"
+
 delete_deployment: false
-openshift_version: ocp4
 insecure_skip_tls_verify: true
+
+####################################
+## Kubernetes NFS-Client Provisioner 
+
+## Set to no skip deploying the NFS-Client Provisioner
+provision_nfs_client_provisoner: yes
+
+## Set the nfs-provisioner-client storageClass as the default
+set_default_storage_class: true
+
+## NFS Volumes
+nfs_provisioner_nfs_path: "{{ nfs_server_directory_path }}/nfs-provisioner"
+
+## object files config vars
+nfs_provisioner_name: 'qubinode/nfs-provisioner'
+nfs_provisioner_namespace: "nfs-client-provisioner"
+nfs_provisioner_role_name: leader-locking-nfs-client-provisioner
+nfs_provisioner_cluster_role_name: nfs-client-provisioner-runner
+nfs_provisioner_cluster_role_bind_name: run-nfs-client-provisioner
+nfs_provisioner_service_account_name: nfs-client-provisioner
+nfs_provisioner_sc_name: managed-nfs-storage
+
+## System path for obejct config files
+openshift_object_configs_files_dir: '/usr/local/src'
+nfs_provisioner_rbac_object_file: "/usr/local/src/nfs-provisioner-rbac.yaml"
+nfs_provisioner_deployment_file: "/usr/local/src/nfs-provisioner-deployment.yaml"
+nfs_provisioner_sc_object_file: "/usr/local/src/nfs-provisioner-sc.yaml"
+
+#######################
+## NFS Server Config
+nfs_exports_config: /etc/exports.d/nfs-auto.exports
+nfs_server_directory_path: /ocp4-nfs  # Path to for nfs shares
+## Subnet to allow connect to nfs export
+nfs_client_subnet: '192.168.50.0/24'
+nfs_server_ip:  192.168.50.1
+
+registry_pvc_name: "qubinode-openshift-registry-nfs-pvc"
+registry_pv_name: "qubinode-openshift-registry-nfs-pv"
+
+## Packages required to deploy NFS server
+nfs_required_packages:
+  - nfs-utils
+  - firewalld
+
+## Firewall ports for NFS server
+nfs_firewall_ports:
+  - 2049/tcp
+  - 2049/udp
+
+## NFS Services
+rhel7_nfs_services:
+  - rpcbind
+  - nfs-server
+  - nfs-lock
+  - nfs-idmap
+
+rhel8_nfs_services:
+  - rpcbind
+  - nfs-server
+
+######################
+## OpenShift Registry
+
+## Set to no if you don't want to configure the NFS registry to use NFS
+configure_registry: yes
+
+registry_pvc_size: 100Gi ## Size for the OpenShift Registry NFS Volume
+nfs_registry_pvc_object_file: "/usr/local/src/registry-pvc.yaml"
+nfs_registry_pv_object_file: "/usr/local/src/registry-pv.yaml"
+
+## NFS Volume
+registry_pv_nfs_path: "{{ nfs_server_directory_path }}/pv-infra-registry"
+
+#############################
+## Commands and cli agruments
+## Path to oc command
+oc_cmd: /usr/local/bin/oc
+annotate_args: "storageclass {{ nfs_provisioner_sc_name }} storageclass.kubernetes.io/ is-default-class"
+
+## Registry Operator API
+registry_op_name: 'configs.imageregistry.operator.openshift.io'
+
+# {{ ansible_managed }}
+# commit: {{ lookup('pipe', 'git rev-parse --short HEAD') }}
+
+#renamed registry_pv_user_pvs_nfs_path to nfs_provisioner_nfs_path
+#renamed nfs_project_namespace to nfs_provisioner_namespace
+#renamed nfs_cluster_role_name tp nfs_provisioner_cluster_role_name
+#nfs_cluster_role_bind_name to nfs_provisioner_cluster_role_bind_name
+#nfs_service_account_name to nfs_provisioner_service_account_name
+#renamed storage_class_name to nfs_provisioner_sc_name

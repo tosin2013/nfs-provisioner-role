@@ -1,55 +1,38 @@
-- name: install nfs-utils
-  yum:
-    name:
-    - nfs-utils
+---
+- name: Ensure required packages are installed
+  package:
+    name: "{{ nfs_required_packages }}"
     state: present
-
-- name: install firewalld
-  yum:
-    name:
-    - firewalld
-    state: present
+  tags: [ nfs_server ]
 
 - name: Make sure firewalld is running
   systemd:
     state: started
     name: firewalld
+  tags: [ nfs_server ]
 
-- name: enable firewalld and ensure it is not masked
+- name: Enable firewalld and ensure it is not masked
   systemd:
     name: firewalld
     enabled: yes
     masked: no
+  tags: [ nfs_server ]
 
-- name: Open up firewall ports
+- name: Open firewall ports for NFS server
   firewalld:
     permanent: yes
     immediate: yes
     state: enabled
     port: "{{ item }}"
-  with_items:
-    - 2049/tcp
-    - 2049/udp
+  loop: "{{ nfs_firewall_ports }}"
+  tags: [ nfs_server ]
 
-- name: Create NFS export directory on RHEL 7 
-  file:
-    path: "{{ nfs_server_directory_path }}"
-    state: directory
-    mode: 0777
-    owner: nfsnobody
-    group: nfsnobody
-  notify:
-    - restart nfs
-  when: (ansible_facts['os_family'] == "RedHat" and ansible_facts['distribution_major_version'] == '7')
+- name: Declare NFS services
+  set_fact:
+    nfs_services: "{{ rhel7_nfs_services if ansible_facts['distribution_major_version'] == '7' else rhel8_nfs_services }}"
+  tags: [ nfs_server ]
 
-- name: SELinux boolean enabled for nfs.
-  seboolean:
-    name: nfs_export_all_rw
-    state: yes
-    persistent: yes
-  when: (ansible_facts['os_family'] == "RedHat" and ansible_facts['distribution_major_version'] == '8')
-
-- name: Create NFS export directory on RHEL 8
+- name: Create NFS export mount directory {{ nfs_server_directory_path }}
   file:
     path: "{{ nfs_server_directory_path }}"
     state: directory
@@ -58,30 +41,42 @@
     group: nobody
   notify:
     - restart nfs
-  when: (ansible_facts['os_family'] == "RedHat" and ansible_facts['distribution_major_version'] == '8')
+  tags: [ nfs_exports, nfs_server ]
 
-- name: Copy NFS export conf file
-  template: src=templates/nfs-exports.j2 dest=/etc/exports.d/nfs-auto.exports
-  notify: restart nfs
+- name: Create NFS registry shares
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0770"
+    owner: nobody
+    group: nobody
+  loop: 
+    - "{{ registry_pv_nfs_path }}"
+    - "{{ nfs_provisioner_nfs_path }}"
+  loop_control:
+    label: "Create directory {{ item }}"
+  tags: [ nfs_exports, nfs_server ]
 
-- name: Starting nfs services RHEL 7
+- name: SELinux boolean enabled for nfs.
+  seboolean:
+    name: nfs_export_all_rw
+    state: yes
+    persistent: yes
+  tags: [ nfs_server ]
+
+- name: Deploy NFS exports config to {{ nfs_exports_config }}
+  template: 
+    src: nfs-exports.j2
+    dest: "{{ nfs_exports_config }}"
+  notify: reload nfs exports
+  tags: [ nfs_exports, nfs_server ]
+
+- name: Starting nfs services
   service:
     name: "{{ item }}"
     enabled: yes
     state: started
-  with_items:
-    - rpcbind
-    - nfs-server
-    - nfs-lock
-    - nfs-idmap
-  when: (ansible_facts['os_family'] == "RedHat" and ansible_facts['distribution_major_version'] == '7')
-
-- name: Starting nfs services RHEL 8
-  service:
-    name: "{{ item }}"
-    enabled: yes
-    state: started
-  with_items:
-    - rpcbind
-    - nfs-server
-  when: (ansible_facts['os_family'] == "RedHat" and ansible_facts['distribution_major_version'] == '8')
+  loop: "{{ nfs_services }}"
+  loop_control:
+    label: "Starting service {{ item }}"
+  tags: [ nfs_server ]

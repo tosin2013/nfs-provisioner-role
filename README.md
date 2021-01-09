@@ -1,13 +1,15 @@
 NFS Provisioner Role
 =========
 
-nfs-provisioner used for allowing stroageclass testing in an OpenShift Platform. This role will provision and NFS server and create an nfs-provisioner class on an OpenShift Cluster.
+The nfs-provisioner role will configure a [Qubinode](https://qubinode.io/) device to use NFS for OpenShift persistant storage. It configures the [Kubernetes NFS-Client Provisioner](https://github.com/kubernetes-sigs/nfs-subdir-external-provisioner.git) and setup up the OpenShift internal registry to use a NFS backed PVC.
+
+The nfs-provisioner configure the Qubinode as NFS server.
+
 
 Requirements
 ------------
+This role is intended to be executed on a Qubinode.
 
-* RHEL7 Should be installed on machine.
-* Ansible should be installed on machine
 
 Understanding OpenShift Persistent Storage Types
 ------------------------------------------------
@@ -39,19 +41,18 @@ Type  | Description  | Default Value
 --|---|--
 provision_nfs_server  | Install and configure nfs server packages  | true
 nfs_server_directory_path  |  Set Directory path of nfs storage  | /exports
-provision_nfs_provisoner |Configure the nfs-provisioner container on OpenShift | true
+provision_nfs_client_provisoner |Configure the nfs-provisioner container on OpenShift | true
 configure_registry  |  Configure Registry with nfs-provisioner storage  |  false
 nfs_server_ip | Set the ip address of the nfs server | 192.168.1.2
 registry_pvc_size | Configure the default size of regisitry | 100Gi  
-openshift_install_dir location of auth/kubeconfig | "/home/qubi/qubinode-installer/ocp4"
-project_namespace | OpenShift Project name for the nfs-provisioner | nfs-provisioner
-rbac_location  | default path of yaml file  | "/usr/local/src/nfs-provisioner-rbac.yaml"
+kubeconfig_dir location of auth/kubeconfig | "/home/qubi/qubinode-installer/ocp4"
+nfs_project_namespace | OpenShift Project name for the nfs-provisioner | nfs-provisioner
+nfs_provisioner_rbac_object_file  | default path of yaml file  | "/usr/local/src/nfs-provisioner-rbac.yaml"
 nfs_provisioner_deploy_loc  | default path of yaml file  | "/usr/local/src/nfs-provisioner-deployment.yaml"
-sc_location  | default path of yaml file  | "/usr/local/src/nfs-provisioner-sc.yaml"
+nfs_provisioner_sc_object_file  | default path of yaml file  | "/usr/local/src/nfs-provisioner-sc.yaml"
 storage_class_name  |  default storage class name  |  nfs-storage-provisioner
-registry_pvc_location  |  default path of yaml file  |   "/usr/local/src/registry-pvc.yaml"
+nfs_registry_pvc_object_file  |  default path of yaml file  |   "/usr/local/src/registry-pvc.yaml"
 delete_deployment  | delete the deployment and project for nfs-provisioner  | false
-openshift_version  | OpenShift version that will will be deploying nfs-provisioner to | ocp4 (ocp3 would be for OpenShift 3.11)
 insecure_skip_tls_verify  |  Skip insecure tls verify  |  true
 
 Dependencies
@@ -70,15 +71,14 @@ Including an example of how to use your role (for instance, with variables passe
       vars:
         provision_nfs_server: true
         nfs_server_directory_path: /export
-        provision_nfs_provisoner: true
+        provision_nfs_client_provisoner: true
         configure_registry: false
         nfs_server_ip:  changeme
         registry_pvc_size: 100Gi
         storage_class_result: true
-        openshift_install_dir: "/home/qubi/qubinode-installer/ocp4"
+        kubeconfig_dir: "/home/qubi/qubinode-installer/ocp4"
         openshift_version: ocp4
-        project_namespace: nfs-provisioner
-        set_as_default: true
+        nfs_project_namespace: nfs-provisioner
         delete_deployment: false
         insecure_skip_tls_verify: true
       roles:

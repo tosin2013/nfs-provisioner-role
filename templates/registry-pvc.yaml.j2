@@ -1,12 +1,10 @@
 apiVersion: "v1"
 kind: "PersistentVolumeClaim"
 metadata:
-  name: "image-registry-pvc"
+  name: {{ registry_pvc_name }}
 spec:
   accessModes:
     - ReadWriteMany
   resources:
     requests:
       storage: "{{ registry_pvc_size }}"
-  storageClassName: "{{ storage_class_name }}"
-  volumeMode: Filesystem

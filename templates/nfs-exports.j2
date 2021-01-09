@@ -1,1 +1,6 @@
-{{ nfs_server_directory_path }}  *(rw,sync,root_squash)
+# {{ ansible_managed }}
+# commit: {{ lookup('pipe', 'git rev-parse --short HEAD') }}
+
+{{ registry_pv_nfs_path }} {{ nfs_client_subnet }}(rw,sync,no_subtree_check,no_root_squash,insecure)
+{{ nfs_provisioner_nfs_path }} {{ nfs_client_subnet }}(rw,sync,no_subtree_check,no_root_squash,insecure)
+
