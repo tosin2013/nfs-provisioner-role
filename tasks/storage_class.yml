@@ -1,0 +1,30 @@
+---
+- name: Create {{ nfs_provisioner_sc_object_file }}
+  template:
+    src: templates/nfs-provisioner-sc.yaml.j2
+    dest: "{{ nfs_provisioner_sc_object_file }}"
+    owner: "{{ admin_user }}"
+    group: "{{ admin_user }}"
+    mode: 0666
+  tags: [ nfs_provisioner, nfs_provisioner_configs, nfs_registry, nfs_registry_configs ]
+
+- name: Apply the NFS provisioner client StorageClass {{ nfs_provisioner_sc_object_file }}
+  command: "{{ oc_cmd }} apply -f {{ nfs_provisioner_sc_object_file }}"
+  register: storage_class_result
+  changed_when: '"unchanged" | string not in storage_class_result.stdout'
+  environment:
+    KUBECONFIG: "{{ kubeconfig_dir }}/auth/kubeconfig"
+  tags: [ nfs_provisioner, nfs_registry ]   
+
+- name: Set the StorageClass {{ nfs_provisioner_sc_name }} as the default
+  shell: |
+    if ! {{ oc_cmd }} annotate {{ annotate_args }}='{{ set_default_storage_class }}'
+    then
+        echo "NoChange"
+    fi
+  register: set_default_storage_class_result
+  changed_when: '"NoChange" | string not in set_default_storage_class_result.stdout'
+  environment:
+    KUBECONFIG: "{{ kubeconfig_dir }}/auth/kubeconfig"
+  when: set_default_storage_class|bool
+  tags: [ nfs_provisioner, nfs_registry ]
