@@ -4,16 +4,26 @@
   block:
     - name: Deploy the NFS Server
       include_tasks: configure-nfs-server.yml
-      when: provision_nfs_server|bool and not delete_deployment|bool
+      when: provision_nfs_server|bool
+      tags: [ nfs_server ]
 
     - name: Deploy the NFS provisioner
       include_tasks: nfs-provisioner.yml
       when: provision_nfs_client_provisoner|bool
+      tags: [ nfs_server ]
     
     - name: Provision the PVC for the OpenShift internal registry
       include_tasks: configure_registry.yml
       when: configure_registry|bool
+      tags: ocp_registry
 
 - name: remove nfs server
+  tags: [ remove_nfs_server ]
   include_tasks: remove-nfs-server.yml
   when: remove_nfs_server|bool
+
+- name: Remove PVC for OpenShift Internal Registry
+  tags: [ remove_registry_pvc ]
+  include_tasks: remove-nfs-server.yml
+  when: remove_registry_storage|bool or delete_deployment|bool
+

@@ -5,26 +5,30 @@
   environment:
    KUBECONFIG: "{{ kubeconfig_dir }}/auth/kubeconfig"
   ignore_errors: yes
-  when: delete_deployment|bool
+  when: remove_registry_storage|bool
+  tags: [ remove_registry_pvc ]
 
 - name: "Check that the {{ nfs_registry_pvc_object_file }} exists"
   stat:
     path: "{{ nfs_registry_pvc_object_file }}"
   register: registry_pvc_result
+  tags: [ remove_registry_pvc ]
 
 - name: Delete persistent volume for registry
   command: "/usr/local/bin/oc delete -f {{ nfs_registry_pvc_object_file }}"
   environment:
     KUBECONFIG: "{{ kubeconfig_dir }}/auth/kubeconfig"
   ignore_errors: yes
-  when: delete_deployment|bool and  registry_pvc_result.stat.exists|bool
+  when: remove_registry_storage|bool and registry_pvc_result.stat.exists|bool
+  tags: [ remove_registry_pvc ]
 
 - name: Remove stoage pvc entry from configs.imageregistry.operator.openshift.io
   command: "/usr/local/bin/oc patch configs.imageregistry.operator.openshift.io cluster --type json  -p '[{ \"op\": \"remove\", \"path\": \"/spec/storage/pvc\" }]'"
   environment:
     KUBECONFIG: "{{ kubeconfig_dir }}/auth/kubeconfig"
   ignore_errors: yes
-  when: delete_deployment|bool
+  when: remove_registry_storage|bool
+  tags: [ remove_registry_pvc ]
 
 - name: Get PV name
   shell: |
@@ -33,11 +37,13 @@
     KUBECONFIG: "{{ kubeconfig_dir }}/auth/kubeconfig"
   ignore_errors: yes
   register: pv_removal_name
-  when: delete_deployment|bool
+  when: remove_registry_storage|bool
+  tags: [ remove_registry_pvc ]
 
 - name: Remove pv from cluster
   command: "/usr/local/bin/oc delete pv {{ pv_removal_name.stdout }} -n openshift-image-registry"
   environment:
     KUBECONFIG: "{{ kubeconfig_dir }}/auth/kubeconfig"
   ignore_errors: yes
-  when: delete_deployment|bool and  pv_removal_name.stdout != ""
+  when: remove_registry_storage|bool and pv_removal_name.stdout != ""
+  tags: [ remove_registry_pvc ]

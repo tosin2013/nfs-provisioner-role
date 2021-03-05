@@ -15,7 +15,9 @@ remove_nfs_server: no
 ## Location to kubeconfig
 kubeconfig_dir: "/home/qubi/qubinode-installer/ocp4"
 
-delete_deployment: false
+## TODO: deprecated delete_deployment, it should be replaced with remove_registry_storage
+remove_registry_storage: no
+delete_deployment: "{{ remove_registry_storage }}"
 insecure_skip_tls_verify: true
 
 ####################################
