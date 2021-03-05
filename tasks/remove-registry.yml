@@ -5,7 +5,6 @@
   environment:
    KUBECONFIG: "{{ kubeconfig_dir }}/auth/kubeconfig"
   ignore_errors: yes
-  when: remove_registry_storage|bool
   tags: [ remove_registry_pvc ]
 
 - name: "Check that the {{ nfs_registry_pvc_object_file }} exists"
@@ -19,7 +18,7 @@
   environment:
     KUBECONFIG: "{{ kubeconfig_dir }}/auth/kubeconfig"
   ignore_errors: yes
-  when: remove_registry_storage|bool and registry_pvc_result.stat.exists|bool
+  when: registry_pvc_result.stat.exists|bool
   tags: [ remove_registry_pvc ]
 
 - name: Remove stoage pvc entry from configs.imageregistry.operator.openshift.io
@@ -27,7 +26,6 @@
   environment:
     KUBECONFIG: "{{ kubeconfig_dir }}/auth/kubeconfig"
   ignore_errors: yes
-  when: remove_registry_storage|bool
   tags: [ remove_registry_pvc ]
 
 - name: Get PV name
@@ -37,7 +35,6 @@
     KUBECONFIG: "{{ kubeconfig_dir }}/auth/kubeconfig"
   ignore_errors: yes
   register: pv_removal_name
-  when: remove_registry_storage|bool
   tags: [ remove_registry_pvc ]
 
 - name: Remove pv from cluster
@@ -45,5 +42,5 @@
   environment:
     KUBECONFIG: "{{ kubeconfig_dir }}/auth/kubeconfig"
   ignore_errors: yes
-  when: remove_registry_storage|bool and pv_removal_name.stdout != ""
+  when: pv_removal_name.stdout != ""
   tags: [ remove_registry_pvc ]
