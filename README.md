@@ -39,6 +39,7 @@ Role Variables
 --------------
 Type  | Description  | Default Value
 --|---|--
+use_token | Using login token to connect to OpenShift Cluster. | true
 provision_nfs_server  | Install and configure nfs server packages  | true
 nfs_server_directory_path  |  Set Directory path of nfs storage  | /exports
 provision_nfs_client_provisoner |Configure the nfs-provisioner container on OpenShift | true
@@ -63,8 +64,31 @@ Dependencies
 
 Example Playbook
 ----------------
+Example using token to deploy to nfs-provisioner OpenShift
+```
+- hosts: localhost
+  become: yes
+  vars:
+    use_token: true
+    provision_nfs_server: true
+    nfs_server_directory_path: /export
+    provision_nfs_provisoner: true
+    configure_registry: true
+    nfs_server_ip:  changeme
+    registry_pvc_size: 100Gi
+    storage_class_result: true
+    openshift_token: 1234567890
+    openshift_url: https://master.example.com:6443 #https://master.example.com for openshift 3
+    openshift_version: ocp4
+    project_namespace: nfs-provisioner
+    set_as_default: true
+    delete_deployment: false
+    insecure_skip_tls_verify: true
+  roles:
+  - nfs-provisioner-role
+```
 
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
+Example using kubeconfig to deploy to nfs-provisioner OpenShift
 ```
     - hosts: targetserver
       become: yes
