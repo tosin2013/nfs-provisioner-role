@@ -1,0 +1,71 @@
+---
+- name: Create {{ nfs_registry_pv_object_file }}
+  template:
+    src: templates/registry-pv.yml.j2
+    dest:  "{{ nfs_registry_pv_object_file }}"
+    owner: "{{ admin_user }}"
+    group: "{{ admin_user }}"
+    mode: 0666
+  tags: [ nfs_registry, nfs_registry_configs ]
+
+- name: Create the registry pvc object config {{ nfs_registry_pvc_object_file }}
+  template:
+    src: templates/registry-pvc.yaml.j2
+    dest: "{{ nfs_registry_pvc_object_file }}"
+    owner: "{{ admin_user }}"
+    group: "{{ admin_user }}"
+    mode: 0666
+  tags: [ nfs_registry, nfs_registry_configs ]
+
+- name: Switch to project openshift-image-registry
+  shell: |
+    {{ oc_cmd }} project openshift-image-registry
+  changed_when: False
+  environment:
+    KUBECONFIG: "{{ kubeconfig_dir }}/auth/kubeconfig"
+  tags: [ nfs_registry ]
+
+- name: Create PV for OpenShift registry
+  shell: |
+    {{ oc_cmd }} apply -f {{ nfs_registry_pv_object_file }}
+  register: pv_object_r
+  changed_when: '"unchanged" | string not in pv_object_r.stdout'
+  environment:
+    KUBECONFIG: "{{ kubeconfig_dir }}/auth/kubeconfig"
+  tags: [ nfs_registry ]
+
+- name: Verify the PV exist
+  shell: |
+    {{ oc_cmd }} get pv | grep {{ registry_pv_name }}
+  register: registry_pv_r
+  changed_when: False
+  environment:
+    KUBECONFIG: "{{ kubeconfig_dir }}/auth/kubeconfig"
+  tags: [ nfs_registry ]
+
+- name: Create PVC for OpenShift registry
+  shell: |
+    {{ oc_cmd }} apply -f {{ nfs_registry_pvc_object_file }}
+  register: pvc_object_r
+  changed_when: '"unchanged" | string not in pvc_object_r.stdout'
+  environment:
+    KUBECONFIG: "{{ kubeconfig_dir }}/auth/kubeconfig"
+  tags: [ nfs_registry ]
+
+- name: Verify PVC for OpenShift 
+  shell: |
+    {{ oc_cmd }} get pvc | grep {{ registry_pvc_name }}
+  changed_when: False
+  environment:
+    KUBECONFIG: "{{ kubeconfig_dir }}/auth/kubeconfig"
+  tags: [ nfs_registry ]
+ 
+- name: Add pvc {{ registry_pvc_name }} to image registry
+  command: |
+    {{ oc_cmd }} patch {{ registry_op_name }} cluster --type merge --patch '{"spec":{"storage":{"pvc":{"claim":"{{ registry_pvc_name }}"}}, "managementState": "Managed"}}'
+  environment:
+    KUBECONFIG: "{{ kubeconfig_dir }}/auth/kubeconfig"
+  register: registry_status
+  tags: [ nfs_registry ]
+
+## TODO - Verify image-registry state
