@@ -8,3 +8,4 @@ spec:
   resources:
     requests:
       storage: "{{ registry_pvc_size }}"
+  storageClassName: {{ nfs_provisioner_sc_name }}
