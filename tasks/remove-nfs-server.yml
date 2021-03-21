@@ -1,0 +1,35 @@
+---
+- name: Ensure required packages are absent
+  package:
+    name: "{{ nfs_required_packages }}"
+    state: present
+  tags: [ remove_nfs_server ]
+
+- name: Remove NFS server ports from firewall
+  firewalld:
+    permanent: yes
+    immediate: yes
+    state: disabled
+    port: "{{ item }}"
+  loop:
+    - 2049/tcp
+    - 2049/udp
+  tags: [ remove_nfs_server ]
+
+- name: Remove NFS export directory {{ nfs_server_directory_path }}
+  file:
+    path: "{{ item }}"
+    state: absent
+  loop: 
+    - "{{ nfs_server_directory_path }}/{{ cluster_name }}-pv-infra-registry"
+    - "{{ nfs_server_directory_path }}"
+    - "{{ nfs_server_directory_path }}/{{ cluster_name }}-pv-user-pvs"
+  loop_control:
+    label: "Remove directory {{ item }}"
+  tags: [ remove_nfs_server ]
+
+- name: Remove NFS export config {{ nfs_exports_config }}
+  file:
+    path: "{{ nfs_exports_config }}"
+    state: absent
+  tags: [ remove_nfs_server ]

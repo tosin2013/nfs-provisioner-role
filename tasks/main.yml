@@ -1,21 +1,29 @@
 ---
-- name: provision nfs server
-  include_tasks: configure-nfs-server.yml
-  when: provision_nfs_server
+- name: Configure the NFS provisioner and OpenShift NFS PVC
+  when: not remove_nfs_server|bool
+  block:
+    - name: Deploy the NFS Server
+      include_tasks: configure-nfs-server.yml
+      when: provision_nfs_server|bool
+      tags: [ nfs_server ]
 
-- name: provision nfs  provisioner on openshift
-  include_tasks: nfs-provisioner.yml
-  when: provision_nfs_provisoner and use_token|bool
+    - name: Deploy the NFS provisioner
+      include_tasks: nfs-provisioner.yml
+      when: provision_nfs_client_provisoner|bool
+      tags: [ nfs_server ]
+    
+    - name: Provision the PVC for the OpenShift internal registry
+      include_tasks: configure_registry.yml
+      when: configure_registry|bool
+      tags: ocp_registry
 
-- name: provision registry storage with nfs-provisioner
-  include_tasks: configure-registiry.yml
-  when: configure_registry and use_token|bool
+- name: remove nfs server
+  tags: [ remove_nfs_server ]
+  include_tasks: remove-nfs-server.yml
+  when: remove_nfs_server|bool
 
-- name: provision nfs  provisioner on openshift
-  include_tasks: nfs-provisioner-kubeconfig.yml
-  when: provision_nfs_provisoner and not use_token|bool
-
-- name: provision registry storage with nfs-provisioner
-  include_tasks: configure-registiry-kubeconfig.yml
-  when: configure_registry and not use_token|bool
+- name: Remove PVC for OpenShift Internal Registry
+  tags: [ remove_registry_pvc ]
+  include_tasks: remove-registry.yml
+  when: remove_registry_storage|bool or delete_deployment|bool
 

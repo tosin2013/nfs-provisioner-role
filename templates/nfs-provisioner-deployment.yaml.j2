@@ -1,35 +1,39 @@
-kind: Deployment
+# {{ ansible_managed }}
 apiVersion: apps/v1
+kind: Deployment
 metadata:
-  name: {{ service_account_name }}
+  name: nfs-client-provisioner
+  labels:
+    app: nfs-client-provisioner
+  name: {{ nfs_provisioner_namespace }}
 spec:
   replicas: 1
   strategy:
     type: Recreate
   selector:
     matchLabels:
-      app: {{ service_account_name }}
+      app: nfs-client-provisioner
   template:
     metadata:
       labels:
-        app: {{ service_account_name }}
+        app: nfs-client-provisioner
     spec:
-      serviceAccountName: {{ service_account_name }}
+      serviceAccountName: nfs-client-provisioner
       containers:
-        - name: {{ service_account_name }}
+        - name: nfs-client-provisioner
           image: quay.io/external_storage/nfs-client-provisioner:latest
           volumeMounts:
             - name: nfs-client-root
               mountPath: /persistentvolumes
           env:
             - name: PROVISIONER_NAME
-              value: nfs-storage
+              value: {{ nfs_provisioner_name }}
             - name: NFS_SERVER
               value: {{ nfs_server_ip }}
             - name: NFS_PATH
-              value: {{ nfs_server_directory_path }}
+              value: {{ nfs_provisioner_nfs_path }}
       volumes:
         - name: nfs-client-root
           nfs:
             server: {{ nfs_server_ip }}
-            path: {{ nfs_server_directory_path }}
+            path: {{ nfs_provisioner_nfs_path }}

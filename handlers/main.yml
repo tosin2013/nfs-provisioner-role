@@ -1,4 +1,12 @@
 ---
 # handlers file for nfs-provisioner-role
 - name: restart nfs
-  service: name=nfs-server state=restarted
+  service: 
+    name: nfs-server 
+    state: restarted
+  tags: [ nfs_server ]
+
+- name: reload nfs exports
+  become: yes
+  command: 'exportfs -ra'
+  tags: [ nfs_exports ]
