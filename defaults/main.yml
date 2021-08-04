@@ -116,5 +116,5 @@ registry_op_name: 'configs.imageregistry.operator.openshift.io'
 ## nfs-client-provisioner image
 ## old image location quay.io/external_storage/nfs-client-provisioner:latest
 ## kubernetes-sig releases: https://github.com/kubernetes-sigs/nfs-subdir-external-provisioner/releases
-nfs_image_version: v4.0.13
+nfs_image_version: v4.0.2
 nfs_client_image:  "k8s.gcr.io/sig-storage/nfs-subdir-external-provisioner:{{ nfs_image_version }}"

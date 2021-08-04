@@ -55,7 +55,7 @@ storage_class_name  |  default storage class name  |  nfs-storage-provisioner
 nfs_registry_pvc_object_file  |  default path of yaml file  |   "/usr/local/src/registry-pvc.yaml"
 delete_deployment  | delete the deployment and project for nfs-provisioner  | false
 insecure_skip_tls_verify  |  Skip insecure tls verify  |  true
-
+nfs_client_image| [Release page](https://github.com/kubernetes-sigs/nfs-subdir-external-provisioner/releases) | v4.0.2
 Dependencies
 ------------
 
