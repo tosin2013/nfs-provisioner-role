@@ -110,3 +110,11 @@ registry_op_name: 'configs.imageregistry.operator.openshift.io'
 #nfs_cluster_role_bind_name to nfs_provisioner_cluster_role_bind_name
 #nfs_service_account_name to nfs_provisioner_service_account_name
 #renamed storage_class_name to nfs_provisioner_sc_name
+
+
+#############################
+## nfs-client-provisioner image
+## old image location quay.io/external_storage/nfs-client-provisioner:latest
+## kubernetes-sig releases: https://github.com/kubernetes-sigs/nfs-subdir-external-provisioner/releases
+nfs_image_version: v4.0.13
+nfs_client_image:  "k8s.gcr.io/sig-storage/nfs-subdir-external-provisioner:{{ nfs_image_version }}"
